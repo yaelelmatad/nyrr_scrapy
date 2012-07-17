@@ -14,8 +14,8 @@ class NYRRSpider(BaseSpider):
         req = []
         for i in range(2007,2012):
             req.append(FormRequest.from_response(response,
-                formdata = {"NYRRYEAR":str(i)}), 
-                callback=self.parse2)
+                formdata = {"NYRRYEAR":str(i)}, 
+                callback=self.parse2))
 
     def parse2(self, response): 
         print self.linkextractor.extract_links(response)
