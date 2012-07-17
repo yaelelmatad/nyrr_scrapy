@@ -3,6 +3,9 @@ from scrapy.http import FormRequest
 from scrapy.http import Request
 from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.selector import HtmlXPathSelector
+import re
+
+metadata_re = re.compile(r"<b>(.+):.+</b>(.+)<br>")
 
 class NYRRSpider(BaseSpider):
     linkextractor = SgmlLinkExtractor("result\.id=")
@@ -36,6 +39,5 @@ class NYRRSpider(BaseSpider):
     def parseRace(self,response):
         hxs = HtmlXPathSelector(response);
         racename =  hxs.select('//title/text()').extract()
-        metadata = hxs.select("//span[@class='text']").extract()[0].split('<br>')
-        print metadata
-        #raceinfo = hxs.select('//
+        metadata = hxs.select("//span[@class='text']").extract()[0]
+        print "##", metadata_re.findall(metadata), "##"
