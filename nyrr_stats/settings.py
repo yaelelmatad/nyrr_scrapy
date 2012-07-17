@@ -12,4 +12,4 @@ BOT_VERSION = '1.0'
 SPIDER_MODULES = ['nyrr_stats.spiders']
 NEWSPIDER_MODULE = 'nyrr_stats.spiders'
 USER_AGENT = '%s/%s' % (BOT_NAME, BOT_VERSION)
-
+FEED_FORMAT = 'csv'
