@@ -16,6 +16,8 @@ class NYRRSpider(BaseSpider):
             req.append(FormRequest.from_response(response,
                 formdata = {"NYRRYEAR":str(i)}, 
                 callback=self.parse2))
+        
+        return req;
 
     def parse2(self, response): 
         print self.linkextractor.extract_links(response)
