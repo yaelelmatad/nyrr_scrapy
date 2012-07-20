@@ -9,11 +9,10 @@ class NyrrStatsItem(Item):
     # define the fields for your item here like:
     raceName = Field()
     distMiles = Field()
-    timestamp = Field()
+    date = Field()
     temp = Field()
+    location = Field()
     humidity = Field()
-    windspeed = Field()
-    perciptation = Field()
     lastName = Field()
     firstName  = Field()
     sex = Field()
