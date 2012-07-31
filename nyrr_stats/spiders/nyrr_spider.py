@@ -31,7 +31,7 @@ class NYRRSpider(BaseSpider):
 
     def parse(self, response):
         req = []
-        for i in range(1990,1995):
+        for i in range(1998,2013):
             req.append(FormRequest.from_response(response,
                 formdata = {"NYRRYEAR":str(i)}, 
                 callback=self.parse2))
