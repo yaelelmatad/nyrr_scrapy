@@ -26,7 +26,7 @@ class NYRRSpider(BaseSpider):
     def parse(self, response):
         req = []
         #for i in range(104136,104137): 
-        for i in range(1,25):
+        for i in range(1,10):
             req.append(FormRequest.from_response(response,
                 formdata = {"MEMNUMBER":str(i)}, 
                 callback=self.parse2))
@@ -74,11 +74,16 @@ class NYRRSpider(BaseSpider):
                 headerConcat = 'dist'
             else:
                 headerStripped = [j for j in header if j != u'\xa0'] #get rid of the garbage nbsp
-                headerConcat = ' '.join(headerStripped) #concatinate
+                headerConcat = ' '.join(headerStripped) #concatninate
             dataLocation[(self.whichDataMember(headerConcat))]=i
             i = i + 1
             numColumns = i
+            print "location"
+            print headerConcat
+            print "form dict ", (self.whichDataMember(headerConcat))
+            print i
             header =  hxs.select('//table[3]/tr[1]/td[' + str(i) + ']/text()').extract()
+            
 
         runnerData = []
         for j in range(0,30):
@@ -102,20 +107,19 @@ class NYRRSpider(BaseSpider):
                     break
                 
                 temp = data[0]
+                print data
                 try:
                     while len(temp)> 0 and u'\xa0' in temp:
                         temp  = temp[:-1]
-                        #print "found it!"
-                        #print temp
-                    #print temp
+                        print "found it!"
                 except:
                     temp =""
                     print "exception"
-                 
+                print temp
+
                 runnerData[i] = temp.lower()
 
             if save == 1:
-                
                 m_gender =""
                 if dataLocation[7]>0:
                     m_gender = 'm'
@@ -157,24 +161,25 @@ class NYRRSpider(BaseSpider):
                     m_overallPlace = ""
                     m_totalRunners = ""
 
-                item.append(NyrrMemberStatsItem(raceName = m_raceName.lower(), 
-                    distMiles = runnerData[dataLocation[2]].lower(), 
-                    date = m_raceDate.lower(),
-                    lastName = m_lastName.lower(),
-                    firstName = m_firstName.lower(),
-                    memberNumber = m_memberNumber.lower(),
-                    sex = m_gender.lower(),
-                    overallPlace= m_overallPlace.lower(),
-                    totalRunners = m_totalRunners.lower(),
-                    genderPlace= m_genderPlace.lower(),
-                    totalOfGender = m_totalOfGender.lower(),
-                    agePlace= m_agePlace.lower(),
-                    totalOfAge = m_totalOfAge.lower(),
-                    netTime= runnerData[dataLocation[4]].lower(),
-                    pacePerMile= runnerData[dataLocation[5]].lower(),
-                    AGTime= runnerData[dataLocation[10]].lower(),
-                    PerfPercent = runnerData[dataLocation[11]].lower(),
-                    ))
+                if runnerData[dataLocation[5]] != "": #weirdness with duplicates w/o netTime?
+                    item.append(NyrrMemberStatsItem(raceName = m_raceName.lower(), 
+                        distMiles = runnerData[dataLocation[2]].lower(), 
+                        date = m_raceDate.lower(),
+                        lastName = m_lastName.lower(),
+                        firstName = m_firstName.lower(),
+                        memberNumber = m_memberNumber.lower(),
+                        sex = m_gender.lower(),
+                        overallPlace= m_overallPlace.lower(),
+                        totalRunners = m_totalRunners.lower(),
+                        genderPlace= m_genderPlace.lower(),
+                        totalOfGender = m_totalOfGender.lower(),
+                        agePlace= m_agePlace.lower(),
+                        totalOfAge = m_totalOfAge.lower(),
+                        netTime= runnerData[dataLocation[4]].lower(),
+                        pacePerMile= runnerData[dataLocation[5]].lower(),
+                        AGTime= runnerData[dataLocation[10]].lower(),
+                        PerfPercent = runnerData[dataLocation[11]].lower(),
+                        ))
 
             k = k + 1
             data =  hxs.select('//table[3]/tr[' + str(k) + ']/td[1]').extract()
@@ -186,7 +191,7 @@ class NYRRSpider(BaseSpider):
         myDict = {'Race Name, Date': 1,
                 'dist': 2,
                 'Gun Time': 3,
-                'Net Time':4,
+                'Net Time': 4,
                 'Pace per Mile': 5,
                 'Overall Place/ Total Finishers':6,
                 'Gender Place/ Total Males':7,
