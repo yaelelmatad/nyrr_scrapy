@@ -132,7 +132,7 @@ class NYRRSpider(BaseSpider):
         for j in range(0,20):
             dataLocation.append(0) #zero will always be an empty string
 
-        header = hxs.select('//table[2]/tr[1]/td[1]/text()').extract()
+        header = hxs.select('//table[2]/tr[1]/td[1]/').extract()
         i=1;
 
         while (header): #go through column by column
@@ -140,7 +140,7 @@ class NYRRSpider(BaseSpider):
             headerConcat = ' '.join(headerStripped) #concatinate
             dataLocation[(self.whichDataMember(headerConcat))]=i
             i = i + 1
-            header =  hxs.select('//table[2]/tr[1]/td[' + str(i) + ']/text()').extract()
+            header =  hxs.select('//table[2]/tr[1]/td[' + str(i) + ']').extract()
         
         runnerData = []
         for j in range(0,30):

@@ -5,6 +5,26 @@
 
 from scrapy.item import Item, Field
 
+class NyrrMemberStatsItem(Item):
+    raceName = Field()
+    distMiles = Field()
+    date = Field()
+    lastName = Field()
+    firstName  = Field()
+    memberNumber = Field()
+    sex = Field()
+    overallPlace  = Field()
+    totalRunners = Field()
+    genderPlace = Field()
+    totalOfGender = Field()
+    agePlace = Field()
+    totalOfAge = Field()
+    netTime  = Field()
+    pacePerMile = Field()
+    AGTime = Field()
+    PerfPercent = Field() 
+    pass
+
 class NyrrStatsItem(Item):
     # define the fields for your item here like:
     raceName = Field()
@@ -31,5 +51,4 @@ class NyrrStatsItem(Item):
     AGGenderPlace  = Field()
     AGPercent  = Field()
     pass
-
 
