@@ -25,8 +25,8 @@ class NYRRSpider(BaseSpider):
 
     def parse(self, response):
         req = []
-        for i in range(104136,104137): 
-        #for i in range(1,2):
+        #for i in range(104136,104137): 
+        for i in range(1,1000):
             req.append(FormRequest.from_response(response,
                 formdata = {"MEMNUMBER":str(i)}, 
                 callback=self.parse2))
@@ -34,7 +34,8 @@ class NYRRSpider(BaseSpider):
 
     def parse2(self, response): 
         req=[]
-        for i in range(1991,2013):
+        for i in range (2008,2009):
+        #for i in range(1991,2013):
             req.append(FormRequest.from_response(response,
                 formdata = {"MEMYEAR":str(i)}, 
                 callback=self.parseRace)) 
@@ -44,9 +45,9 @@ class NYRRSpider(BaseSpider):
         item = []
         req = []
         hxs = HtmlXPathSelector(response)
-        name = hxs.select("//table[1]").extract()
-        parsedName = name_re.findall(name[0])
         try:
+            name = hxs.select("//table[1]").extract()
+            parsedName = name_re.findall(name[0])
             m_lastName = parsedName[0][0]
             m_firstName = parsedName[0][1]
         except:
@@ -86,35 +87,43 @@ class NYRRSpider(BaseSpider):
         k = 2 #second row starts actual data
         while(data):
             try:
-                data_re=metadata_re.findall(data[1])
+                data_re=metadata_re.findall(data[-1])
             except:
                 try:
                     data_re=metadata_re.findall(data[0])
                 except:
-                    print "exception"
-                    print data
+                    #print "exception"
+                    #print data
                     return req + item
-            m_raceName = data_re[0][0].lower()
-            m_raceDate = data_re[0][1].lower()
-            
+            try:
+                m_raceName = data_re[0][0].lower()
+                m_raceDate = data_re[0][1].lower()
+            except:
+                #print data
+                #print 
+                #print "exception rn,  rd"
+                #print data_re
+                return req + item
+
+
             save = 1
             for i in range (2, numColumns):
                 data =  hxs.select('//table[2]/tr[' + str(k) + ']/td[' + str(i) + ']/text()').extract()
-                print data
+                #print data
                 if data[0] and 'MQ' in data[0] or 'VQ' in data[0]:
-                    print "marathon/volunteer Q , break"
+                    #print "marathon/volunteer Q , break"
                     save = -1
                     break
                 
                 temp = data[-1]
-                print data
+                #print data
                 try:
                     while len(temp)> 0 and u'\xa0' in temp:
                         temp  = temp[:-1]
                 except:
                     temp =""
-                    print "exception"
-                print temp
+                    #print "exception"
+                #print temp
 
                 runnerData[i] = temp.lower()
 
