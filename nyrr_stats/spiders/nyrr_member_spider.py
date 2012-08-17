@@ -6,7 +6,7 @@ from scrapy.selector import HtmlXPathSelector
 import re
 from nyrr_stats.items import NyrrMemberStatsItem
 
-metadata_re = re.compile(r'.+?<b>(.+?)</b><br>(.+?)</td>.+?',re.UNICODE)
+metadata_re = re.compile(r'<b>(.+?)</b><br>(.+?)</td>',re.UNICODE)
 name_re = re.compile(r'colspan="2">(.+?), (.+?) .+? ([0-9]+)</td>',re.UNICODE)
 details_re =re.compile(r'<b>(.+?):</b></td><td class="text">(.+?)</td>',re.UNICODE)
 data_re = re.compile(r'(.+?)\xa0',re.UNICODE)
@@ -25,8 +25,8 @@ class NYRRSpider(BaseSpider):
 
     def parse(self, response):
         req = []
-        #for i in range(104136,104137): 
-        for i in range(1,10):
+        for i in range(104136,104137): 
+        #for i in range(1,2):
             req.append(FormRequest.from_response(response,
                 formdata = {"MEMNUMBER":str(i)}, 
                 callback=self.parse2))
@@ -37,30 +37,27 @@ class NYRRSpider(BaseSpider):
         for i in range(1991,2013):
             req.append(FormRequest.from_response(response,
                 formdata = {"MEMYEAR":str(i)}, 
-                callback=self.parseOneRunnerYear))
+                callback=self.parseRace)) 
         return req
 
-    def parseOneRunnerYear(self, response):
-        req = []
-        for x in self.linkextractor2.extract_links(response):
-            if x.text == 'PRINT-FRIENDLY VERSION':
-                req.append(Request(x.url, callback = self.parseRace))
-        return req
-    
     def parseRace(self, response): 
         item = []
         req = []
         hxs = HtmlXPathSelector(response)
-        name = hxs.select("//table[2]").extract()
+        name = hxs.select("//table[1]").extract()
         parsedName = name_re.findall(name[0])
-        m_lastName = parsedName[0][0]
-        m_firstName = parsedName[0][1]
+        try:
+            m_lastName = parsedName[0][0]
+            m_firstName = parsedName[0][1]
+        except:
+            return req + item
 
         parsedDetails = details_re.findall(name[0])
         m_memberNumber = parsedDetails[0][1]
 
         #now actually parse the race table
-        header = hxs.select('//table[3]/tr[1]/td[1]/text()').extract()
+        
+        header = hxs.select('//table[2]/tr[1]/td[1]/text()').extract()
         dataLocation = []
         for i in range (0,20):
             dataLocation.append(0)
@@ -78,40 +75,42 @@ class NYRRSpider(BaseSpider):
             dataLocation[(self.whichDataMember(headerConcat))]=i
             i = i + 1
             numColumns = i
-            print "location"
-            print headerConcat
-            print "form dict ", (self.whichDataMember(headerConcat))
-            print i
-            header =  hxs.select('//table[3]/tr[1]/td[' + str(i) + ']/text()').extract()
+            header =  hxs.select('//table[2]/tr[1]/td[' + str(i) + ']/text()').extract()
             
 
         runnerData = []
         for j in range(0,30):
             runnerData.append("")
 
-        data  = hxs.select('//table[3]/tr[2]/td[1]').extract()
+        data  = hxs.select('//table[2]/tr[2]/td[1]').extract()
         k = 2 #second row starts actual data
         while(data):
-            data_re=metadata_re.findall(data[0])
-            #print data_re
+            try:
+                data_re=metadata_re.findall(data[1])
+            except:
+                try:
+                    data_re=metadata_re.findall(data[0])
+                except:
+                    print "exception"
+                    print data
+                    return req + item
             m_raceName = data_re[0][0].lower()
             m_raceDate = data_re[0][1].lower()
             
             save = 1
             for i in range (2, numColumns):
-                data =  hxs.select('//table[3]/tr[' + str(k) + ']/td[' + str(i) + ']/text()').extract()
+                data =  hxs.select('//table[2]/tr[' + str(k) + ']/td[' + str(i) + ']/text()').extract()
+                print data
                 if data[0] and 'MQ' in data[0] or 'VQ' in data[0]:
-                    #print data
                     print "marathon/volunteer Q , break"
                     save = -1
                     break
                 
-                temp = data[0]
+                temp = data[-1]
                 print data
                 try:
                     while len(temp)> 0 and u'\xa0' in temp:
                         temp  = temp[:-1]
-                        print "found it!"
                 except:
                     temp =""
                     print "exception"
@@ -182,10 +181,9 @@ class NYRRSpider(BaseSpider):
                         ))
 
             k = k + 1
-            data =  hxs.select('//table[3]/tr[' + str(k) + ']/td[1]').extract()
+            data =  hxs.select('//table[2]/tr[' + str(k) + ']/td[1]').extract()
             
         return item + req
-        #return req
     
     def whichDataMember(self, member):
         myDict = {'Race Name, Date': 1,
