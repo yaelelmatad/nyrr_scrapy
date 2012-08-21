@@ -283,21 +283,29 @@ for row in inputCSV:
     items = zip(fields,row)
     item = {}
     id = 1+id
+    flag= 1
     for (name, value) in items:
         header = header + str(name) + ","
         item[name]=value.strip()
         #convert stuff
+        #if name == 'netTime':
         if name == 'netTime':
-            value = convertToSeconds(value,id)
+            if len(value)!=0:
+                value = convertToSeconds(value,id)
+            else:
+                flag = 0
         if name == 'AGTime' and len(value)!=0:
             value = convertToSeconds(value,id)
         if name == 'pacePerMile' and len(value)!=0:
             value = convertToSeconds(value,id)
+            ppm = float(value)
         if name == 'date':
             value = convertToTimestamp(value,id)
         if name == 'AGPercent' or name == 'PerfPercent':
             value = convertPercent(value,id)
-        
+        if name == 'distMiles':
+            dist = float(value)
+
         if name =='team' or name == 'lastName' or name == 'firstName' or name == 'raceName' or name == 'location' or name == 'city' or name == 'state' or name == 'country':
             row2 = row2 + "\"" + str(value) + "\","
         else:
@@ -305,11 +313,20 @@ for row in inputCSV:
 
         if name =='raceName':
             value = convertRaceName(value,id)
-    
+   
+    if (flag == 0): #no total time get from ppm
+        for(name,value) in items:
+            if name == 'netTime':
+                #print id
+                #print "converted from ", value
+                #print "ppm ", ppm
+                #print "dist ", dist
+                value = int(ppm*dist)
+                #print value
+
     if id == 1:
         print header[:-1]
     
     print row2[:-1]
 
     
-
